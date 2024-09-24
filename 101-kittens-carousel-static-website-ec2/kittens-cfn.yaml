@@ -27,16 +27,34 @@ Resources:
     Properties:
       Tags: 
         - Key: Name
-          Value: altaz-carousel-webserver
+          Value: corey-carousel-webserver
       ImageId: ami-066784287e358dad1
       InstanceType: t2.micro
       KeyName: ec2-ssh-key-corey
       SecurityGroupIds: 
         - !GetAtt rSecurityGroup.GroupId
-      UserData: "String"
+      UserData:
+        Fn::Base64:
+          |
+            #! /bin/bash -x
 
+            yum update -y
+            yum install httpd -y
 
+            cd /var/www/html
 
+            FOLDER=https://raw.githubusercontent.com/coriko83/my-repository/main/101-kittens-carousel-static-website-ec2/static-web
+            wget ${FOLDER}/index.html
+            wget ${FOLDER}/cat0.jpg
+            wget ${FOLDER}/cat1.jpg
+            wget ${FOLDER}/cat2.jpg
 
-  
-# Outputs:LogicalID
+            systemctl start httpd
+            systemctl enable httpd
+
+Outputs:
+
+  WebURL:
+    Description: URL for website
+    Value: !Join [ "", ["http://", !GetAtt rWebServer.PublicDnsName ] ]
+
